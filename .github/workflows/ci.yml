@@ -12,7 +12,7 @@ jobs:
         run: echo "Hello Github actions"
 
       - name: get code
-        uses: actions/checkout@4
+        uses: actions/checkout@v4
 
       - name: Verify code
         run: |
