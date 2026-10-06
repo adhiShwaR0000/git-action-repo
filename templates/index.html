@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f8">
+    <title>Taskboard — Make room for what matters</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="{{ url_for('index') }}">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>taskboard</span>
+        </a>
+
+        <div class="workspace-label">WORKSPACE</div>
+        <nav class="main-nav" aria-label="Task views">
+          <a class="nav-link {% if view == 'all' %}selected{% endif %}" href="{{ url_for('index', view='all') }}">
+            <span class="nav-icon" aria-hidden="true">▤</span>
+            <span>All tasks</span>
+            <span class="nav-count">{{ counts.total }}</span>
+          </a>
+          <a class="nav-link {% if view == 'active' %}selected{% endif %}" href="{{ url_for('index', view='active') }}">
+            <span class="nav-icon circle-icon" aria-hidden="true">◷</span>
+            <span>In progress</span>
+            <span class="nav-count">{{ counts.active }}</span>
+          </a>
+          <a class="nav-link {% if view == 'completed' %}selected{% endif %}" href="{{ url_for('index', view='completed') }}">
+            <span class="nav-icon" aria-hidden="true">☑</span>
+            <span>Completed</span>
+            <span class="nav-count">{{ counts.completed }}</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-note">
+          <div class="note-spark" aria-hidden="true">✦</div>
+          <strong>One thing at a time.</strong>
+          <p>Small steps add up to big progress.</p>
+          <div class="note-progress"><span style="width: {{ (counts.completed / counts.total * 100)|round|int if counts.total else 0 }}%"></span></div>
+          <span class="note-caption">{{ counts.completed }} of {{ counts.total }} tasks done</span>
+        </div>
+        <div class="sidebar-footer"><span class="status-dot"></span> Your personal workspace</div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong>My tasks</strong></div>
+          <div class="profile">
+            <div class="date-label">YOUR SPACE TO FOCUS</div>
+            <div class="avatar" aria-label="Your profile">Y</div>
+          </div>
+        </header>
+
+        <section class="content-wrap">
+          <div class="intro-row">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> A LITTLE PROGRESS, EVERY DAY</div>
+              <h1>Make room for<br><span>what matters.</span></h1>
+              <p class="intro-copy">Your thoughts, organized. Your next step, always clear.</p>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+              <div class="art-orbit orbit-one"></div>
+              <div class="art-orbit orbit-two"></div>
+              <div class="art-sun"></div>
+              <div class="art-leaf leaf-one"></div>
+              <div class="art-leaf leaf-two"></div>
+              <div class="art-leaf leaf-three"></div>
+              <div class="art-ground"></div>
+              <div class="art-card"><span>✦</span><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-icon purple">✧</span><span class="stat-caption">TOTAL TASKS</span></div>
+              <div class="stat-value">{{ counts.total }}</div>
+              <div class="stat-foot">Everything on your list</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-icon blue">◷</span><span class="stat-caption">IN PROGRESS</span></div>
+              <div class="stat-value">{{ counts.active }}</div>
+              <div class="stat-foot">One step at a time</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-icon green">✓</span><span class="stat-caption">COMPLETED</span></div>
+              <div class="stat-value">{{ counts.completed }}</div>
+              <div class="stat-foot">Look how far you’ve come</div>
+            </article>
+          </div>
+
+          <section class="tasks-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>{% if view == 'active' %}In progress{% elif view == 'completed' %}Completed{% else %}Your tasks{% endif %}</h2>
+                <p>{% if view == 'active' %}Keep the momentum going.{% elif view == 'completed' %}A little celebration is in order.{% else %}Pick a task and make today count.{% endif %}</p>
+              </div>
+              <div class="task-total"><span class="live-dot"></span>{{ tasks|length }} <span>shown</span></div>
+            </div>
+
+            <form class="add-task-form" action="{{ url_for('add_task') }}" method="post">
+              <span class="add-symbol" aria-hidden="true">+</span>
+              <label class="visually-hidden" for="task-title">What needs to get done?</label>
+              <input id="task-title" type="text" name="title" maxlength="160" placeholder="What needs to get done?" autocomplete="off" required>
+              <button type="submit">Add task <span aria-hidden="true">↗</span></button>
+            </form>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="notice" role="status">{{ messages[-1] }}</div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="task-list">
+              {% for task in tasks %}
+                <article class="task-row {% if task.completed %}is-complete{% endif %}">
+                  <form action="{{ url_for('toggle_task', task_id=task.id) }}" method="post">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <button class="check-button" type="submit" aria-label="{% if task.completed %}Mark {{ task.title }} as in progress{% else %}Mark {{ task.title }} complete{% endif %}">
+                      {% if task.completed %}<span aria-hidden="true">✓</span>{% endif %}
+                    </button>
+                  </form>
+                  <span class="task-title">{{ task.title }}</span>
+                  <span class="task-tag {% if task.completed %}tag-done{% else %}tag-active{% endif %}">
+                    {% if task.completed %}Done{% else %}In progress{% endif %}
+                  </span>
+                  <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <button class="delete-button" type="submit" aria-label="Delete {{ task.title }}" title="Delete task">×</button>
+                  </form>
+                </article>
+              {% else %}
+                <div class="empty-state">
+                  <div class="empty-icon" aria-hidden="true">{% if view == 'completed' %}✦{% else %}☼{% endif %}</div>
+                  <strong>{% if view == 'completed' %}Your wins will show up here{% elif view == 'active' %}Nothing on your plate{% else %}A fresh page{% endif %}</strong>
+                  <p>{% if view == 'completed' %}Finish a task and take a moment to celebrate.{% elif view == 'active' %}You’re all caught up. Enjoy the breathing room.{% else %}Add your first task above and get started.{% endif %}</p>
+                </div>
+              {% endfor %}
+            </div>
+            <div class="panel-footer"><span>Made for focus, built for you.</span><span>✦</span></div>
+          </section>
+          <footer class="page-footer">A clear mind starts with a clear list <span>— take it one task at a time.</span></footer>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
