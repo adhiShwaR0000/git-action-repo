@@ -10,3 +10,12 @@ jobs:
     steps:
       - name: Hello
         run: echo "Hello Github actions"
+
+      - name: get code
+        uses: actions/checkout@4
+
+      - name: Verify code
+        run: |
+          echo "Pulled code successfully"
+          ls -al
+      
