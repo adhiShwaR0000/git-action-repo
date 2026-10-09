@@ -33,7 +33,7 @@ jobs:
           python -m pip install pytest
 
       - name: pytest
-        run: pytest tests/tests.py
+        run: python -m pytest tests/tests.py
         
       - name: run app
         run: timeout 10s python app.py || true
