@@ -97,7 +97,7 @@ def delete_task(task_id):
     flash("Task deleted.")
     return redirect(url_for("index", view=request.form.get("view", "all")))
 
+initialize_database()
 
-if __name__ == "__main__":
-    initialize_database()
+if __name__ == "__main__":    
     app.run(debug=True)
