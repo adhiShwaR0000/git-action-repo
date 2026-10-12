@@ -1,17 +1,23 @@
 name: CI
 
+run-name: deploy by @${{ github.actor }}
+
 on:
   push:
   pull_request:
     
 jobs:
-  check:
+  greet:
     runs-on: ubuntu-latest
 
     steps:
       - name: Hello
         run: echo "Hello Github actions"
 
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
       - name: get code
         uses: actions/checkout@v4
 
