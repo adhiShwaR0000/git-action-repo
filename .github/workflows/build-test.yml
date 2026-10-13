@@ -1,4 +1,4 @@
-name: CI
+name: Build and test
 
 run-name: deploy by @${{ github.actor }}
 
@@ -14,13 +14,14 @@ jobs:
       - name: Hello
         run: echo "Hello Github actions"
 
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
       - name: get code
         uses: actions/checkout@v4
-
+        
+  test:
+    runs-on: ubuntu-latest
+    needs: greet
+    
+    steps:
       - name: Verify code
         run: |
           echo "Pulled code successfully"
